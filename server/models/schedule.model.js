@@ -107,9 +107,6 @@ const getScheduleByEmployeeId = async (employeeId) => {
       { isDeleted: 0 }
     ).populate("employee", "firstName lastName position");
 
-    console.log("schedule", schedule);
-    console.log("employeeId", employeeId);
-
     if (schedule) {
       return {
         status: "SUCCESS",
