@@ -1,0 +1,12 @@
+.more-detail {
+  transition: height 300ms ease-in-out;
+}
+
+.more-detail {
+  height: 0;
+  overflow: hidden;  
+}
+
+.more-detail.open {
+  height: auto;
+}
