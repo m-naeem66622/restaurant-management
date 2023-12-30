@@ -96,8 +96,8 @@ const updateProfileSchemaForManager = Joi.object({
     .trim()
     .uppercase()
     .valid(...possiblePositions),
-  contactNumber: Joi.string().trim().required(),
-  address: Joi.string().trim().required(),
+  contactNumber: Joi.string().trim(),
+  address: Joi.string().trim(),
 });
 
 module.exports = {
