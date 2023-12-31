@@ -40,16 +40,15 @@ const updateProfileSchema = Joi.object({
     }),
   contactNumber: Joi.string().trim(),
   address: Joi.string().trim(),
-  password: Joi.string(),
-  oldPassword: Joi.string()
-    .when("password", {
+  password: Joi.string()
+    .when("confirmPassword", {
       is: Joi.exist(),
       then: Joi.required(),
       otherwise: Joi.optional(),
     })
-    .invalid(Joi.ref("password"))
+    .valid(Joi.ref("confirmPassword"))
     .messages({
-      "any.invalid": "password and oldPassword must not be same",
+      "any.only": "password and confirmPassword must be the same",
     }),
   confirmPassword: Joi.string(),
   oldPassword: Joi.string()
