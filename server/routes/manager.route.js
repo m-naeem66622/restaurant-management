@@ -10,8 +10,8 @@ const Authorize = require("../middlewares/authorize.middleware");
 router.post(
   "/register",
   validate(Validation.registerSchema, "BODY"),
-//   authenticate,
-//   Authorize.isManager,
+  authenticate,
+  Authorize.isManager,
   Controller.registerManager
 );
 

@@ -6,7 +6,8 @@ const possiblePositions = [
   "SOUS CHEF",
   "BARTENDER",
   "SERVER",
-  "HOST/HOSTESS",
+  "HOST",
+  "HOSTESS",
   "BUSSER",
   "DISHWASHER",
   "CASHIER",
@@ -36,6 +37,11 @@ const registerSchema = Joi.object({
     .required(),
   contactNumber: Joi.string().trim().required(),
   address: Joi.string().trim().required(),
+});
+
+const getAllSchema = Joi.object({
+  limit: Joi.number().min(1).default(10),
+  page: Joi.number().min(1).default(1),
 });
 
 const loginSchema = Joi.object({
@@ -79,7 +85,7 @@ const updateProfileSchemaForEmployee = Joi.object({
   .with("oldPassword", "password")
   .label("password")
   .messages({
-    "object.with": "from with password is required",
+    "object.with": "password is required",
   });
 
 const updateProfileSchemaForManager = Joi.object({
@@ -104,6 +110,7 @@ module.exports = {
   possiblePositions,
   validateId,
   registerSchema,
+  getAllSchema,
   loginSchema,
   updateProfileSchemaForEmployee,
   updateProfileSchemaForManager,

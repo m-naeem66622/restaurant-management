@@ -27,6 +27,7 @@ router.post(
 // Get all employees
 router.get(
   "/",
+  validate(Validation.getAllSchema, "QUERY"),
   authenticate,
   Authorize.isManager,
   EmployeeController.getAllEmployees
