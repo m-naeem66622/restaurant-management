@@ -7,7 +7,11 @@ const registerEmployee = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const employeeExist = await Employee.getEmployeeByEmail(email);
+    const employeeExist = await Employee.getEmployeeByEmail(
+      email,
+      undefined,
+      true
+    );
 
     if (employeeExist.status === "SUCCESS") {
       throwError("FAILED", 409, "Email already exists", "0x000B04");

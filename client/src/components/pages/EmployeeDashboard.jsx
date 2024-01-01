@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useAuthContext } from "../../providers/AuthProvider";
 import LogoutButton from "../common/LogoutButton";
 import EditEmployee from "../common/EditEmployee";
+import Button from "../common/Button";
 
 const Dashboard = () => {
+  document.title = "Employee Dashboard | Restaurant Management System";
   const { accountDetail: employeeData, setAccountDetail } = useAuthContext();
   const [scheduleData, setScheduleData] = useState({});
   const [isScheduleAvailable, setIsScheduleAvailable] = useState(false);
@@ -11,7 +13,6 @@ const Dashboard = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const closeModalHandle = () => {
-    console.log("closeModalHandle --> closing Modal after update");
     setIsModalOpen(false);
     document.body.style.overflow = "unset";
     setIsEditingProfile(false);
@@ -24,7 +25,6 @@ const Dashboard = () => {
   };
 
   const handleEditProfile = (updatedData) => {
-    console.log("handleEditProfile --> updatedData:", updatedData)
     setAccountDetail(updatedData);
     closeModalHandle();
   };
@@ -68,7 +68,7 @@ const Dashboard = () => {
         <h2 className="text-xl font-semibold mb-2">Profile</h2>
         <div>
           <p>
-            <strong>Name:</strong> {employeeData.firstName}{" "}
+            <strong>Name:</strong> {employeeData.firstName}
             {employeeData.lastName}
           </p>
           <p>
@@ -84,12 +84,9 @@ const Dashboard = () => {
             <strong>Address:</strong> {employeeData.address}
           </p>
         </div>
-        <button
-          onClick={handleEditProfileClick}
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
-        >
+        <Button onClick={handleEditProfileClick} className="mt-2">
           Edit Profile
-        </button>
+        </Button>
       </div>
 
       {/* Edit Profile Modal */}

@@ -86,6 +86,8 @@ const AuthProvider = (props) => {
         setIsManager,
         isEmployee,
         setIsEmployee,
+        getEmployeeDetails,
+        getManagerDetails,
       }}
     >
       {props.children}

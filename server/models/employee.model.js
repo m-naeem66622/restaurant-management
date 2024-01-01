@@ -92,12 +92,23 @@ const getEmployeeById = async (employeeId, projection) => {
   }
 };
 
-const getEmployeeByEmail = async (email, projection) => {
+const getEmployeeByEmail = async (
+  email,
+  projection,
+  includeDeleted = false
+) => {
   try {
-    const employee = await Employee.findOne(
-      { email, isDeleted: false },
-      projection
-    );
+    // const employee = await Employee.findOne(
+    //   { email, isDeleted: false },
+    //   projection
+    // );
+
+    const filter = { email };
+    if (!includeDeleted) {
+      filter.isDeleted = false;
+    }
+
+    const employee = await Employee.findOne(filter, projection);
 
     if (employee) {
       return {

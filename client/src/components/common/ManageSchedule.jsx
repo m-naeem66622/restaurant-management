@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import Modal from "./Modal";
+import Button from "./Button";
+import { useAuthContext } from "../../providers/AuthProvider";
 
 function ManageSchedule({
   isModalOpen,
@@ -9,6 +11,7 @@ function ManageSchedule({
   employeeId,
   ...restProps
 }) {
+  const { notify } = useAuthContext();
   const [updatedSchedule, setUpdatedSchedule] = useState(
     selectedSchedule
       ? {
@@ -28,22 +31,20 @@ function ManageSchedule({
           sunHrs: 0,
         }
   );
-  console.log("ManageSchedule --> updatedSchedule", updatedSchedule);
   const [serverErrors, setServerErrors] = useState({});
 
   const handleSchedule = async (e) => {
     e.preventDefault();
     setServerErrors({});
-    let successfull;
+    let schedule;
     if (selectedSchedule) {
-      successfull = await updateSchedule(updatedSchedule);
+      schedule = await updateSchedule(updatedSchedule);
     } else {
-      successfull = await addSchedule(updatedSchedule);
+      schedule = await addSchedule(updatedSchedule);
     }
 
-    if (successfull) {
-      console.log("successfull", successfull);
-      handleManageSchedule(updatedSchedule);
+    if (schedule) {
+      handleManageSchedule(schedule);
     }
   };
 
@@ -62,7 +63,7 @@ function ManageSchedule({
       };
 
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/schedules/${updatedSchedule._id}`,
+        import.meta.env.VITE_BASE_URL + `/api/schedules/${updatedSchedule._id}`,
         {
           method: "PATCH",
           headers: {
@@ -75,14 +76,14 @@ function ManageSchedule({
 
       const data = await response.json();
       if (data.status === "SUCCESS") {
-        console.log("updateSchedule --> data.data", data.data);
-        return true;
+        notify("success", "Schedule updated successfully");
+        return data.data;
       } else {
         setServerErrors(data.error);
         return false;
       }
     } catch (error) {
-      // TODO : Handle error
+      notify("error", "Something went wrong");
       console.error(error);
       return false;
     }
@@ -104,7 +105,7 @@ function ManageSchedule({
       };
 
       const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/schedules`,
+        import.meta.env.VITE_BASE_URL + "/api/schedules",
         {
           method: "POST",
           headers: {
@@ -117,14 +118,14 @@ function ManageSchedule({
 
       const data = await response.json();
       if (data.status === "SUCCESS") {
-        console.log("addSchedule --> data.data", data.data);
-        return true;
+        notify("success", "Schedule added successfully");
+        return data.data;
       } else {
         setServerErrors(data.error);
         return false;
       }
     } catch (error) {
-      // TODO : Handle error
+      notify("error", error.message);
       console.error(error);
       return false;
     }
@@ -352,12 +353,9 @@ function ManageSchedule({
 
           {/* Add other schedule details similarly */}
           <div className="mb-4 flex justify-end items-end">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:bg-blue-600"
-            >
-              Save Schedule
-            </button>
+            <Button type="submit">
+              {selectedSchedule ? "Update" : "Add"} Schedule
+            </Button>
           </div>
         </form>
       </div>

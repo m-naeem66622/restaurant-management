@@ -3,8 +3,10 @@ const express = require("express");
 const cors = require("cors");
 const connectToDatabase = require("./config/db");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
+const startCronJob = require("./helpers/cron-job.helper");
 
 connectToDatabase();
+startCronJob();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,7 +22,6 @@ const employeeRoutes = require("./routes/employee.route");
 app.use("/api/employees", employeeRoutes);
 const scheduleRoutes = require("./routes/schedule.route");
 app.use("/api/schedules", scheduleRoutes);
-
 
 app.use(notFound);
 app.use(errorHandler);

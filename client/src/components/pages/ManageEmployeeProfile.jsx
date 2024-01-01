@@ -2,20 +2,25 @@ import React, { useEffect, useState } from "react";
 import Modal from "../common/Modal";
 import EditEmployee from "../common/EditEmployee";
 import { possiblePositions } from "../../config/config";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ManageSchedule from "../common/ManageSchedule";
+import LogoutButton from "../common/LogoutButton";
+import Button from "../common/Button";
+import DeleteSchedule from "../common/DeleteSchedule";
 
 const ManageEmployeeProfilePage = () => {
+  document.title = "Manage Employee Profile | Restaurant Management System";
+  const navigate = useNavigate();
   const { employeeId } = useParams();
   const [isScheduleAvailable, setIsScheduleAvailable] = useState(false);
   const [employeeData, setEmployeeData] = useState({});
   const [scheduleData, setScheduleData] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isDeletingSchedule, setIsDeletingSchedule] = useState(false);
   const [isManagingSchedule, setIsManagingSchedule] = useState(false);
 
   const closeModalHandle = () => {
-    console.log("closeModalHandle --> closing Modal after update");
     setIsModalOpen(false);
     document.body.style.overflow = "unset";
   };
@@ -28,6 +33,7 @@ const ManageEmployeeProfilePage = () => {
   const handleManageSchedule = (updatedSchedule) => {
     setScheduleData(updatedSchedule);
     closeModalHandle();
+    setIsManagingSchedule(false);
     setIsScheduleAvailable(true);
   };
 
@@ -41,6 +47,19 @@ const ManageEmployeeProfilePage = () => {
     setIsManagingSchedule(true);
     setIsModalOpen(true);
     document.body.style.overflow = "hidden";
+  };
+
+  const handleDeleteScheduleClick = () => {
+    setIsDeletingSchedule(true);
+    setIsModalOpen(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const handleDeleteSchedule = (deletedSchedule) => {
+    setScheduleData({});
+    setIsScheduleAvailable(false);
+    setIsDeletingSchedule(false);
+    closeModalHandle();
   };
 
   const getEmployeeDetails = async () => {
@@ -97,7 +116,15 @@ const ManageEmployeeProfilePage = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Employee Profile</h2>
+      <div className="flex justify-between">
+        <h2 className="text-2xl font-semibold mb-4">Employee Profile</h2>
+        <div className="">
+          <LogoutButton />
+          <Button className="ml-2" onClick={() => navigate("/dashboard")}>
+            Dashboard
+          </Button>
+        </div>
+      </div>
 
       {/* Display Employee Details */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -128,12 +155,10 @@ const ManageEmployeeProfilePage = () => {
             <p className="font-semibold">{employeeData.address}</p>
           </div>
         </div>
-        <button
-          onClick={handleEditProfileClick}
-          className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:bg-blue-600 mt-4"
-        >
+
+        <Button onClick={handleEditProfileClick} className="mt-4">
           Edit Profile
-        </button>
+        </Button>
       </div>
 
       {/* Edit Profile Modal */}
@@ -211,12 +236,19 @@ const ManageEmployeeProfilePage = () => {
             </div>
           </div>
         )}
-        <button
-          onClick={handleEditScheduleClick}
-          className="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:bg-blue-600 mt-4"
-        >
+        <Button onClick={handleEditScheduleClick} className="mt-4 mr-2">
           {isScheduleAvailable ? "Edit" : "Add"} Schedule
-        </button>
+        </Button>
+
+        {isScheduleAvailable && (
+          <Button
+            onClick={handleDeleteScheduleClick}
+            variant="danger"
+            className="mt-4"
+          >
+            Delete Schedule
+          </Button>
+        )}
       </div>
 
       {/* Edit Schedule Modal */}
@@ -231,6 +263,19 @@ const ManageEmployeeProfilePage = () => {
           handleManageSchedule={handleManageSchedule}
           employeeId={employeeId}
           setIsScheduleAvailable={setIsScheduleAvailable}
+        />
+      )}
+
+      {/* Delete Schedule Modal */}
+      {isDeletingSchedule && (
+        <DeleteSchedule
+          isOpen={isModalOpen}
+          closeModal={() => {
+            closeModalHandle();
+            setIsDeletingSchedule(false);
+          }}
+          handleDeleteSchedule={handleDeleteSchedule}
+          selectedSchedule={scheduleData}
         />
       )}
     </div>

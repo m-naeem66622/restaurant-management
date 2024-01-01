@@ -1,65 +1,80 @@
-import React, { useState } from "react";
-import Modal from "./Modal";
+import React, { useEffect, useState } from "react";
+import LogoutButton from "../common/LogoutButton";
 import { useAuthContext } from "../../providers/AuthProvider";
-import Button from "./Button";
+import Modal from "../common/Modal";
+import Button from "../common/Button";
+import { useNavigate } from "react-router-dom";
 
-function EditEmployee({
-  isModalOpen,
-  closeModalHandle,
-  selectedUser,
-  handleEditUser,
-  possiblePositions,
-  forEmployee = false,
-}) {
+function ManagerProfile() {
+  document.title = "Manager Profile | Restaurant Management System";
   const { notify } = useAuthContext();
-  const [updatedUser, setUpdatedUser] = useState({ ...selectedUser });
+  const navigate = useNavigate();
+  const { accountDetail, setAccountDetail } = useAuthContext();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [serverErrors, setServerErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [updatedUser, setUpdatedUser] = useState({});
   const [credentials, setCredentials] = useState({
     oldPassword: "",
     password: "",
     confirmPassword: "",
   });
 
+  const handleEditProfileClick = () => {
+    setIsModalOpen(true);
+    setIsEditing(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const handleEditProfile = (updatedData) => {
+    setAccountDetail(updatedData);
+    closeModalHandle();
+    notify("success", "Profile updated successfully.");
+    setShowPasswordFields(false);
+    setCredentials({
+      oldPassword: "",
+      password: "",
+      confirmPassword: "",
+    });
+  };
+
+  const closeModalHandle = () => {
+    setIsModalOpen(false);
+    setIsEditing(false);
+    document.body.style.overflow = "unset";
+  };
+
   const handleUpdateUser = async (e) => {
     e.preventDefault();
     setServerErrors({});
     const updatedData = await updateUser({ ...updatedUser, ...credentials });
     if (updatedData) {
-      notify("success", "User updated successfully");
-      handleEditUser(updatedData);
+      handleEditProfile(updatedData);
     }
   };
 
   const updateUser = async (updatedUser) => {
     try {
       let userData = {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
         contactNumber: updatedUser.contactNumber,
         address: updatedUser.address,
       };
 
-      if (forEmployee) {
-        if (showPasswordFields) {
-          userData = {
-            ...userData,
-            oldPassword: updatedUser.oldPassword,
-            password: updatedUser.password,
-            confirmPassword: updatedUser.confirmPassword,
-          };
-        }
-      } else {
+      if (showPasswordFields) {
         userData = {
           ...userData,
-          firstName: updatedUser.firstName,
-          lastName: updatedUser.lastName,
-          email: updatedUser.email,
-          position: updatedUser.position,
+          oldPassword: updatedUser.oldPassword,
+          password: updatedUser.password,
+          confirmPassword: updatedUser.confirmPassword,
         };
       }
 
       const response = await fetch(
-        import.meta.env.VITE_BASE_URL +
-          `/api/employees/${forEmployee ? "profile" : updatedUser._id}`,
+        import.meta.env.VITE_BASE_URL + "/api/managers/profile/",
         {
           method: "PATCH",
           headers: {
@@ -69,37 +84,80 @@ function EditEmployee({
           body: JSON.stringify(userData),
         }
       );
-
       const data = await response.json();
       if (data.status === "SUCCESS") {
         return data.data;
       } else {
         if (response.status === 400) {
           setServerErrors(data.error);
+        } else if (response.status === 401) {
+          notify("error", "The old password is incorrect.");
         } else {
           notify("error", data.error.message);
         }
         return false;
       }
     } catch (error) {
-      notify("error", error.message);
       console.error(error);
       return false;
     }
   };
 
+  useEffect(() => {
+    setUpdatedUser(accountDetail);
+  }, [accountDetail]);
+
   return (
-    <Modal isOpen={isModalOpen} closeModal={closeModalHandle}>
-      <div className="p-4">
-        <h3 className="text-xl font-semibold mb-4">
-          {`Editing ${selectedUser.firstName} ${selectedUser.lastName}`}
-        </h3>
-        <form
-          onSubmit={handleUpdateUser}
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-4"
-        >
-          {!forEmployee && (
-            <>
+    <div className="p-6">
+      <div className="flex justify-between">
+        <h2 className="text-2xl font-semibold mb-4">Manager Profile</h2>
+        <div className="">
+          <Button
+            onClick={() => {
+              navigate("/dashboard");
+            }}
+            className="mr-2"
+          >
+            Dashboard
+          </Button>
+          <LogoutButton />
+        </div>
+      </div>
+
+      {/* Profile Section */}
+      <div className="bg-white rounded shadow-md p-4 mb-4">
+        <h2 className="text-xl font-semibold mb-2">Profile</h2>
+        <div>
+          <p>
+            <strong>Name:</strong> {accountDetail.firstName}
+            {accountDetail.lastName}
+          </p>
+          <p>
+            <strong>Email:</strong> {accountDetail.email}
+          </p>
+          <p>
+            <strong>Contact Number:</strong> {accountDetail.contactNumber}
+          </p>
+          <p>
+            <strong>Address:</strong> {accountDetail.address}
+          </p>
+        </div>
+        <Button onClick={handleEditProfileClick} className="mt-2">
+          Edit Profile
+        </Button>
+      </div>
+
+      {/* Edit Profile Modal */}
+      {isEditing && (
+        <Modal isOpen={isModalOpen} closeModal={closeModalHandle}>
+          <div className="p-4">
+            <h3 className="text-xl font-semibold mb-4">
+              {`Editing ${accountDetail.firstName} ${accountDetail.lastName}`}
+            </h3>
+            <form
+              onSubmit={handleUpdateUser}
+              className="grid grid-cols-1 md:grid-cols-2 gap-x-4"
+            >
               <div className="mb-4">
                 <label htmlFor="firstName" className="block font-semibold mb-1">
                   First Name
@@ -160,76 +218,52 @@ function EditEmployee({
                   <div className="text-red-500">{serverErrors.email}</div>
                 )}
               </div>
+
               <div className="mb-4">
-                <label htmlFor="position" className="block font-semibold mb-1">
-                  Position
+                <label
+                  htmlFor="contactNumber"
+                  className="block font-semibold mb-1"
+                >
+                  Contact Number
                 </label>
-                <select
-                  id="position"
-                  value={updatedUser.position}
+                <input
+                  type="text"
+                  id="contactNumber"
+                  value={updatedUser.contactNumber}
                   onChange={(e) =>
                     setUpdatedUser({
                       ...updatedUser,
-                      position: e.target.value,
+                      contactNumber: e.target.value,
                     })
                   }
                   className="border border-gray-300 rounded px-4 py-2 w-full focus:outline-none focus:border-blue-500"
-                >
-                  {possiblePositions.map((position, index) => (
-                    <option key={index} value={position}>
-                      {position}
-                    </option>
-                  ))}
-                </select>
-                {serverErrors.position && (
-                  <div className="text-red-500">{serverErrors.position}</div>
+                />
+                {serverErrors.contactNumber && (
+                  <div className="text-red-500">
+                    {serverErrors.contactNumber}
+                  </div>
                 )}
               </div>
-            </>
-          )}
+              <div className="mb-4 col-span-2">
+                <label htmlFor="address" className="block font-semibold mb-1">
+                  Address
+                </label>
+                <textarea
+                  id="address"
+                  value={updatedUser.address}
+                  onChange={(e) =>
+                    setUpdatedUser({
+                      ...updatedUser,
+                      address: e.target.value,
+                    })
+                  }
+                  className="border border-gray-300 rounded px-4 py-2 w-full h-20 focus:outline-none focus:border-blue-500 resize-none"
+                />
+                {serverErrors.address && (
+                  <div className="text-red-500">{serverErrors.address}</div>
+                )}
+              </div>
 
-          <div className="mb-4">
-            <label htmlFor="contactNumber" className="block font-semibold mb-1">
-              Contact Number
-            </label>
-            <input
-              type="text"
-              id="contactNumber"
-              value={updatedUser.contactNumber}
-              onChange={(e) =>
-                setUpdatedUser({
-                  ...updatedUser,
-                  contactNumber: e.target.value,
-                })
-              }
-              className="border border-gray-300 rounded px-4 py-2 w-full focus:outline-none focus:border-blue-500"
-            />
-            {serverErrors.contactNumber && (
-              <div className="text-red-500">{serverErrors.contactNumber}</div>
-            )}
-          </div>
-          <div className="mb-4 col-span-2">
-            <label htmlFor="address" className="block font-semibold mb-1">
-              Address
-            </label>
-            <textarea
-              id="address"
-              value={updatedUser.address}
-              onChange={(e) =>
-                setUpdatedUser({
-                  ...updatedUser,
-                  address: e.target.value,
-                })
-              }
-              className="border border-gray-300 rounded px-4 py-2 w-full h-20 focus:outline-none focus:border-blue-500 resize-none"
-            />
-            {serverErrors.address && (
-              <div className="text-red-500">{serverErrors.address}</div>
-            )}
-          </div>
-
-          {forEmployee && (
-            <>
               <div className="flex justify-start items-center gap-x-4 mb-4 col-span-2">
                 <span className="text-md font-semibold">Change Password</span>
                 <label className="switch">
@@ -321,18 +355,18 @@ function EditEmployee({
                   </div>
                 </>
               )}
-            </>
-          )}
 
-          <div className="col-span-2">
-            <Button type="submit" className="w-full">
-              Save Changes
-            </Button>
+              <div className="col-span-2">
+                <Button type="submit" className="w-full">
+                  Save Changes
+                </Button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
-    </Modal>
+        </Modal>
+      )}
+    </div>
   );
 }
 
-export default EditEmployee;
+export default ManagerProfile;

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../providers/AuthProvider";
+import Button from "../common/Button";
 
 const LoginPage = () => {
+  document.title = "Employee Login | Restaurant Management System";
   const navigate = useNavigate();
-  const { notify, setIsEmployee } = useAuthContext();
+  const { notify, setIsEmployee, getEmployeeDetails } = useAuthContext();
   const [serverErrors, setServerErrors] = useState({});
   const [credentials, setCredentials] = useState({
     email: "",
@@ -34,6 +36,7 @@ const LoginPage = () => {
       if (data.status === "SUCCESS") {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userRole", "EMPLOYEE");
+        await getEmployeeDetails();
         setIsEmployee(true);
         navigate("/employee/dashboard");
         notify("success", "Logged in successfully");
@@ -67,7 +70,7 @@ const LoginPage = () => {
               type="email"
               id="email"
               name="email"
-              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-purple-500"
+              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-500"
               onChange={handleChange}
               value={credentials.email}
             />
@@ -86,7 +89,7 @@ const LoginPage = () => {
               type="password"
               id="password"
               name="password"
-              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-purple-500"
+              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-500"
               onChange={handleChange}
               value={credentials.password}
             />
@@ -96,12 +99,21 @@ const LoginPage = () => {
               </p>
             )}
           </div>
-          <button
+          <Button
             type="submit"
-            className="w-full bg-purple-600 text-white font-semibold py-2 rounded hover:bg-purple-700 focus:outline-none focus:bg-purple-700"
+            className="w-full mt-4"
+            // className="w-full bg-purple-600 text-white font-semibold py-2 rounded hover:bg-purple-700 focus:outline-none focus:bg-purple-700"
           >
             Login
-          </button>
+          </Button>
+          <p className="text-center text-gray-500 mt-4">
+            <Link
+              to="/manager/login"
+              className="text-blue-500 font-semibold hover:underline"
+            >
+              Login as Manager
+            </Link>
+          </p>
         </form>
       </div>
     </div>

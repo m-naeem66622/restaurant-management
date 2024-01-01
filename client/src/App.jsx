@@ -12,6 +12,7 @@ import {
 } from "./components/common/PrivateRoutes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ManagerProfile from "./components/pages/ManagerProfile";
 
 function App() {
   return (
@@ -19,14 +20,18 @@ function App() {
       <ToastContainer />
       <Routes>
         <Route path="/" element={<EmployeeLogin />} />
+        <Route path="/login" element={<EmployeeLogin />} />
         <Route path="/manager/login" element={<ManagerLogin />} />
+
         <Route element={<ManagerPrivateRoutes />}>
           <Route path="/dashboard" element={<ManagerDashboard />} />
           <Route
             path="/manage/employee/:employeeId"
             element={<ManageEmployeeProfile />}
           />
+          <Route path="/manager/profile" element={<ManagerProfile />} />
         </Route>
+
         <Route element={<EmployeePrivateRoutes />}>
           <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
         </Route>
